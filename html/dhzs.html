@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+    <title>动画展示</title>
+    <link rel="stylesheet" type="text/css" href="../public/css/header.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/dhzs.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/footer.css" />
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+        <div id="fbxs">
+            <div id="up" onclick="scroll_by_div(-50)">
+                <i class="fa fa-chevron-up" title="向上滚动"></i>
+            </div>
+            <div id="fbx_in">
+                <div class="fbx" v-bind:class="{selected: index==selected_id}" v-for="(fbx,index) in fbxs" v-on:click="select(index)">
+                    <img v-bind:src="fbx.img_src">
+                    <div class="info">
+                        <span>{{fbx.title}}</span>
+                    </div>
+                </div>
+            </div>
+            <div id="down" onclick="scroll_by_div(50)">
+                <i class="fa fa-chevron-down"></i>
+            </div>
+        </div>
+        <div id="player">
+            <div id="canvan">
+
+            </div>
+            <div id="controls">
+                <i class="fa fa-play" style="float: left;" onclick="playAnimate()"></i>
+                <i class="fa fa-pause" style="float: left;" onclick="playCtrl()"></i>
+                <i class="fa fa-backward" style="float: left;" onclick="speedChange(-0.25)"></i>
+                <i class="fa fa-forward" style="float: left;" onclick="speedChange(0.25)"></i>
+                <i class="fa fa-download" style="float: right;" onclick="download()"></i>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../public/js/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        $(function() {
+            $("header").load("../html/header.html", function(res, status) {
+                $("ul.first li.one:nth-child(2)").addClass("selected");
+                $("footer").load("../html/footer.html", function(res, status) {
+                    handle_footer();
+                    $("main").height(function() {
+                        return window.innerHeight - $("header").height() - $("footer").outerHeight(true) + 'px';
+                    });
+                });
+            });
+            //加载动作文件数据
+            var url = window.location.href;
+            url = '/dhzs/' + url.split('?')[1];
+            $.get(url, function(res) {
+                if (res == 'error') {
+                    return;
+                }
+                var fbx = [];
+                for (var file of res.files) {
+                    var file_name = file.split('.')[0];
+                    var file_extension = file.split('.')[1];
+                    if (file_extension == 'fbx' || file_extension == 'FBX') {
+                        var file_obj = {};
+                        file_obj.title = file_name;
+                        file_obj.src = res.src + file;
+                        file_obj.img_src = res.src + file_name + '.png';
+                        fbx.push(file_obj);
+                    }
+                }
+                fbxs.fbxs = fbx;
+                fbxs.selected_id = 0;
+            })
+        });
+        $(window).resize(handle_footer);
+
+        function handle_footer() {
+            var height = window.innerHeight;
+            var doc_height = $('body').innerHeight();
+            if (doc_height < height) {
+                $('footer').addClass('fixed');
+            } else {
+                $('footer').removeClass('fixed');
+            }
+        }
+    </script>
+    <script>
+        var fbxs = new Vue({
+            el: "#fbx_in",
+            data: {
+                fbxs: [],
+                selected_id: -1
+            },
+            methods: {
+                select: function(index) {
+                    this.selected_id = index;
+                }
+            },
+        });
+    </script>
+    <script>
+        function scroll_by_div(num) {
+            $('#fbx_in')[0].scrollBy({
+                top: num,
+                behavior: 'smooth'
+            });
+        }
+
+        function download() {
+            var a = document.createElement('a');
+            a.href = fbxs.fbxs[fbxs.selected_id].src;
+            a.download = fbxs.fbxs[fbxs.selected_id].title + '.fbx';
+            a.click();
+        }
+    </script>
+    <script src="../public/js/three.js"></script>
+    <script src="../public/js/inflate.min.js"></script>
+    <script src="../public/js/FBXLoader.js"></script>
+    <script src="../public/js/OrbitControls.js"></script>
+    <script>
+        var container, controls;
+        var camera, scene, renderer, light;
+        var clock = new THREE.Clock()
+        var mixer, action;
+        var speed = 1;
+        var ml = document.getElementById('canvan');
+
+        function init() {
+            var mapwidth = document.getElementById('canvan').offsetWidth;
+            var mapheight = document.getElementById('canvan').offsetHeight;
+            camera = new THREE.PerspectiveCamera(60, mapwidth / mapheight, 1, 2000);
+            camera.position.set(0, 200, 400);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xe7e7e7);
+
+            light = new THREE.HemisphereLight(0xdcdcdc, 0x444444);
+            light.position.set(-50, 100, 100);
+            scene.add(light);
+
+            light = new THREE.DirectionalLight(0xdcdcdc);
+            light.position.set(-50, 100, 100);
+            light.castShadow = true;
+            light.shadow.camera.top = 300;
+            light.shadow.camera.bottom = -100;
+            light.shadow.camera.left = -120;
+            light.shadow.camera.right = 420;
+            light.shadow.camera.near = 10;
+            light.shadow.camera.far = 1000;
+            scene.add(light);
+            // ground
+            var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2000, 2000), new THREE.MeshPhongMaterial({
+                color: 0x999999,
+                depthWrite: false
+            }));
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            var grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+            grid.material.opacity = 0.2;
+            grid.material.transparent = true;
+            scene.add(grid);
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(ml.clientWidth, ml.clientHeight); //设置自动生成的画布大小
+            renderer.shadowMap.enabled = true;
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            ml.innerHTML = '';
+            ml.appendChild(renderer.domElement);
+            getModels();
+        }
+
+        function playAnimate() {
+            init();
+            animate();
+        }
+
+        function playCtrl() {
+            action.paused = !action.paused;
+        }
+
+        function speedChange(num) {
+            if (speed == 0.5 && num < 0) {
+                return;
+            }
+            if (speed == 1.5 && num > 0) {
+                return;
+            }
+            speed += num;
+            action.timeScale = speed;
+        }
+
+        function getModels() {
+            var modelsurl = fbxs.fbxs[fbxs.selected_id].src;
+            var loader = new THREE.FBXLoader();
+            loader.load(modelsurl, function(object) {
+                mixer = new THREE.AnimationMixer(object); //动画播放器处理模型动画		
+                action = mixer.clipAction(object.animations[0]); //关键帧轨迹
+                action.timeScale = speed; // 播放速度，默认速度为1
+                action.setLoop(THREE.loop).play(); //设置循环次数
+                object.traverse(function(child) {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(object);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            var delta = clock.getDelta();
+            if (mixer) {
+                controls.update();
+                mixer.update(delta);
+            }
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maxmum-scale=1">
+    <title>登录</title>
+    <link rel="stylesheet" href="../public/css/login.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+
+<body>
+    <div id="container">
+        <div id="login">
+            <div class="head">
+                <div class="logo_in">
+                    <img src="../public/imgs/太极.png" alt="">
+                </div>
+                <p>登录</p>
+            </div>
+            <div class="login_contain">
+                <i class="fa fa-envelope fa-fw" aria-hidden="true"></i><input type="text" placeholder="请输入邮箱">
+                <i class="fa fa-key fa-fw" aria-hidden="true"></i><input type="password" placeholder="请输入密码">
+                <p class="info"></p>
+                <div class="button_in"><button id="login_button" onclick="login()">登录</button></div>
+                <div>
+                    <p>没有账号？<a href="#/register">立即注册</a></p>
+                    <p style="float: right;"><a href="#/change_password">忘记密码</a></p>
+                </div>
+            </div>
+        </div>
+        <div id="register" class="hidden">
+            <div class="head">
+                <div class="logo_in">
+                    <img src="../public/imgs/太极.png" alt="">
+                </div>
+                <p>注册</p>
+            </div>
+            <div class="register_contain">
+                <i class="fa fa-user fa-fw" aria-hidden="true"></i><input type="text" placeholder="请输入昵称">
+                <i class="fa fa-envelope fa-fw" aria-hidden="true"></i><input type="text" placeholder="请输入邮箱">
+                <i class="fa fa-key fa-fw" aria-hidden="true"></i><input type="password" placeholder="请输入密码">
+                <p class="info"></p>
+                <div class="button_in"><button id="register_button" onclick="register()">注册</button></div>
+            </div>
+            <div>
+                <p>已有账号？<a href="#/login">立即登录</a></p>
+            </div>
+        </div>
+        <div id="change_password" class="hidden">
+            <div class="head">
+                <div class="logo_in">
+                    <img src="../public/imgs/太极.png" alt="">
+                </div>
+                <p>忘记密码</p>
+            </div>
+            <div class="change_contain">
+                <i class="fa fa-envelope fa-fw" aria-hidden="true"></i><input type="text" placeholder="请输入邮箱">
+                <i class="fa fa-unlock fa-fw" aria-hidden="true"></i><input type="text" placeholder="请输入验证码">
+                <i class="fa fa-key fa-fw" aria-hidden="true"></i><input type="password" placeholder="请输入新密码">
+                <p class="info"></p>
+                <div class="button_in">
+                    <button id="change_button" onclick="get_code()" style="width: 6em;">发送验证码</button>
+                    <button id="change_button" onclick="change()">修改</button>
+                </div>
+            </div>
+            <div>
+                <p><a href="#/login">返回登录</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        window.addEventListener('hashchange', on_hash_changed);
+
+        $(function() {
+            on_hash_changed();
+        })
+
+        function on_hash_changed() {
+            switch (location.hash) {
+                case '#/login':
+                    $('#register').addClass('hidden');
+                    $('#change_password').addClass('hidden');
+                    $('#login').removeClass('hidden');
+                    break;
+                case '#/register':
+                    $('#register').removeClass('hidden');
+                    $('#change_password').addClass('hidden');
+                    $('#login').addClass('hidden');
+                    break;
+                case '#/change_password':
+                    $('#register').addClass('hidden');
+                    $('#change_password').removeClass('hidden');
+                    $('#login').addClass('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+    </script>
+    <script>
+        function login() {
+            var email = $('div.login_contain input[type=text]')[0].value;
+            var password = $('div.login_contain input[type=password]')[0].value;
+            var data = {
+                'email': email,
+                'password': password
+            }
+            $.post('/login/login', data, function(res, status, xhr) {
+                switch (res) {
+                    case '-1':
+                        break;
+                    case '0':
+                        $('p.info')[0].innerHTML = "密码错误";
+                        break;
+                    case '1':
+                        window.location.href = "/html/index.html";
+                        break;
+                    case '2':
+                        $('p.info')[0].innerHTML = "邮箱错误";
+                        break;
+                    default:
+                        break;
+                }
+            })
+        }
+
+        function register() {
+            var username = $('div.register_contain input[type=text]')[0].value;
+            var email = $('div.register_contain input[type=text]')[1].value;
+            var password = $('div.register_contain input[type=password]')[0].value;
+            var data = {
+                'username': username,
+                'email': email,
+                'password': password
+            }
+            $.post('/login/register', data, function(res, status, xhr) {
+                switch (res) {
+                    case '-1':
+                        $('p.info')[1].innerHTML = "邮箱已被注册";
+                        break;
+                    case '0':
+                        $('p.info')[1].innerHTML = "注册完成";
+                        break;
+                    default:
+                        break;
+                }
+            })
+        }
+
+        function get_code() {
+            var email = $('div.change_contain input[type=text]')[0].value;
+            var data = {
+                'email': email
+            }
+            $.post('/login/sendcode', data, function(res, status, xhr) {
+                $('p.info')[2].innerHTML = res;
+            })
+        }
+
+        function change() {
+            var email = $('div.change_contain input[type=text]')[0].value;
+            var code = $('div.change_contain input[type=text]')[1].value;
+            var password = $('div.change_contain input[type=password]')[0].value;
+            var data = {
+                'email': email,
+                'code': code,
+                'password': password
+            }
+            $.post('/login/changepassword', data, function(res, status) {
+                $('p.info')[2].innerHTML = res;
+            })
+        }
+    </script>
+</body>
+
+</html>

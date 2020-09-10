@@ -1,0 +1,76 @@
+<div id="logo" style="width: 4em; height: 4em;"><img src="../public/imgs/太极.png" alt=""></div>
+<ul class="first">
+    <li class="one"><a href="../html/index.html">首页</a>
+        <div></div>
+    </li>
+    <li class="one"><a href="../html/dhzs.html?taiji">动画展示</a>
+        <div></div>
+        </a>
+        <ul class="second">
+            <li><a href="../html/dhzs.html?taiji">太极</a></li>
+            <li><a href="../html/dhzs.html?wudao">舞蹈</a></li>
+            <li><a href="../html/dhzs.html?qita">其他</a></li>
+        </ul>
+    </li>
+    <li class="one"><a href="../html/dzyl.html">动作预览</a>
+        <div></div>
+    </li>
+    <li class="one"><a href="../html/gszh.html">格式转换</a>
+        <div></div>
+    </li>
+</ul>
+<div id="user_info">
+    <div class="no_user">
+        <i class="fa fa-user"></i>
+        <a href="../html/login.html">登录</a>
+    </div>
+    <div class="user none">
+        <i class="fa fa-user"></i>
+        <p id="user_name" style="cursor: default;"></p>
+        <ul class="user_set">
+            <li><a href="../html/login.html#/change_password">修改密码</a></li>
+            <li><a href="javascript:void(0)" onclick="logout()">登出</a></li>
+        </ul>
+    </div>
+</div>
+<script>
+    function get_cookie() {
+        var cookie = [];
+        var info = decodeURIComponent(document.cookie);
+        if (info == "") {
+            return cookie;
+        }
+        info = info.split('; ');
+        var cookie = [];
+        for (var item of info) {
+            item = item.split('=');
+            cookie[item[0]] = item[1];
+        }
+        return cookie;
+    }
+
+    function has_login() {
+        cookie = get_cookie();
+        if (cookie.login == undefined || cookie.login == 'false') {
+            document.getElementsByClassName('no_user')[0].className = 'no_user';
+            document.getElementsByClassName('user')[0].className = 'user none';
+            return;
+        } else {
+            document.getElementsByClassName('no_user')[0].className = 'no_user none';
+            document.getElementById('user_name').innerHTML = cookie.username;
+            document.getElementsByClassName('user')[0].className = 'user';
+        }
+    }
+    has_login();
+
+    function logout() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('get', '/login/logout', true);
+        xhr.send();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                has_login();
+            }
+        }
+    }
+</script>

@@ -1,0 +1,120 @@
+<!DOCTYPE hrml>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+    <title>格式转换</title>
+    <link rel="stylesheet" type="text/css" href="../public/css/header.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/gszh.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/footer.css" />
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+        <div id="container">
+            <p>将动作文件转换为其他格式</p>
+            <div>
+                <input type="file" id="file_in" onchange="file_load()" style="visibility: hidden; position: absolute;">
+                <button class="upload" onclick="file_in.click()">选择文件▼</button>
+                <i class="fa fa-refresh" aria-hidden="true"></i>
+                <select name="file_form">
+                    <option value="Collada">Collada</option>
+                </select>
+            </div>
+            <button class="change" onclick="export_model()">转换</button>
+        </div>
+    </main>
+    <footer></footer>
+
+    <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../public/js/three.js"></script>
+    <script src="../public/js/ColladaExporter.js"></script>
+    <script src="../public/js/inflate.min.js"></script>
+    <script src="../public/js/FBXLoader.js"></script>
+    <script>
+        $(function() {
+            $("header").load("../html/header.html", function(res, status) {
+                $("ul.first li.one:nth-child(4)").addClass("selected");
+                $("footer").load("../html/footer.html", function(res, status) {
+                    handle_footer();
+                    $("main").height(function() {
+                        return window.innerHeight - $("header").height() - $("footer").outerHeight(true) + 'px';
+                    });
+                });
+            });
+        });
+        $(window).resize(handle_footer);
+
+        function handle_footer() {
+            var height = window.innerHeight;
+            var doc_height = $('body').innerHeight();
+            if (doc_height < height) {
+                $('footer').addClass('fixed');
+            } else {
+                $('footer').removeClass('fixed');
+            }
+        }
+    </script>
+    <script>
+        var buffer = null;
+
+        function file_load() {
+            var file = document.getElementById('file_in').files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function(e) {
+                buffer = this.result;
+            }
+        }
+
+        var exporter = null;
+        var link = document.createElement('a');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+
+        function save(blob, filename) {
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        function saveString(text, filename) {
+            save(new Blob([text], {
+                type: 'text/plain'
+            }), filename);
+        }
+
+        function saveArrayBuffer(buffer, filename) {
+            save(new Blob([buffer], {
+                type: 'application/octet-stream'
+            }), filename);
+        }
+
+        function export_model() {
+            var value = $('select')[0].value;
+            switch (value) {
+                case 'Collada':
+                    exportCollada();
+                    break;
+                default:
+                    break;
+            }
+        }
+    </script>
+    <script>
+        function exportCollada() {
+            var object = new THREE.FBXLoader().parse(buffer, "");
+            exporter = new THREE.ColladaExporter();
+            var result = exporter.parse(object);
+            saveString(result.data, 'test.dae');
+            result.textures.forEach(tex => {
+                saveArrayBuffer(tex.data, `${tex.name}.${tex.ext}`);
+            });
+        }
+    </script>
+</body>
+
+</html>

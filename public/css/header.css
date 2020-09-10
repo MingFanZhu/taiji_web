@@ -1,0 +1,144 @@
+header {
+    width: 100%;
+    height: 4em;
+    background-color: rgb(48, 44, 44);
+    color: white;
+}
+
+header #logo,
+li,
+ul.first,
+#user_info,
+#user_info div,
+#user_info p {
+    display: inline-block;
+    vertical-align: top
+}
+
+header #logo img,
+header #user_info img {
+    width: 90%;
+    height: 90%;
+    margin-left: 5%;
+    margin-top: 5%;
+    object-fit: contain;
+}
+
+header ul {
+    margin: 0;
+    padding: 0;
+}
+
+header li {
+    list-style: none;
+    width: 8em;
+    height: 4em;
+    text-align: center;
+    line-height: 4em;
+}
+
+header li a {
+    color: white;
+    text-decoration: none;
+}
+
+header li div {
+    width: 0%;
+    height: 5px;
+    margin-top: -5px;
+    background-color: rgba(15, 102, 216, 0.959);
+    transition: width 1s;
+}
+
+header li:hover {
+    animation: li_hover 1s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes li_hover {
+    from {
+        background-color: rgb(48, 44, 44);
+    }
+    to {
+        background-color: black;
+        text-shadow: 0 0 3px white;
+    }
+}
+
+header li:hover div {
+    width: 100%;
+}
+
+header ul.first ul.second li {
+    display: block;
+}
+
+header ul.first li ul.second {
+    display: none;
+    position: absolute;
+    z-index: 99;
+}
+
+header ul.first li:hover ul.second {
+    display: block;
+    background-color: rgb(48, 44, 44);
+    text-shadow: none;
+}
+
+header li.selected {
+    background-color: black;
+    text-shadow: 0 0 3px white;
+}
+
+header li.selected div {
+    width: 100%;
+}
+
+header #user_info {
+    float: right;
+    margin-right: 1em;
+    line-height: 4em;
+    position: relative;
+}
+
+header #user_info div.no_user div.user {
+    position: absolute;
+}
+
+header #user_info div.user p {
+    margin: 0;
+    padding: 0;
+}
+
+header #user_info div.user:hover ul {
+    display: block;
+    background-color: rgb(48, 44, 44);
+    text-shadow: none;
+}
+
+header #user_info div.user ul {
+    display: none;
+    position: absolute;
+    z-index: 99;
+    right: 0;
+}
+
+header #user_info div.user ul li {
+    display: block;
+    text-align: center;
+}
+
+header #user_info a {
+    color: white;
+    text-decoration: none;
+    transition: .8s;
+}
+
+header #user_info a:hover {
+    color: rgba(15, 102, 216, 0.959);
+    text-shadow: 0 0 3px rgba(15, 102, 216, 0.959);
+}
+
+header #user_info div.none {
+    display: none;
+}

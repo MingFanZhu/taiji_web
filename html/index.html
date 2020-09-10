@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maxmum-scale=1">
+    <title>首页</title>
+    <link rel="stylesheet" href="../public/css/header.css">
+    <link rel="stylesheet" href="../public/css/index.css">
+    <link rel="stylesheet" href="../public/css/footer.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+
+<body>
+    <script src="../public/js/jquery-3.5.1.js"></script>
+    <header>
+    </header>
+    <main>
+        <div id="rotation_chart" v-on:mouseover="mouseover" v-on:mouseout="mouseout">
+            <transition name="fade">
+                <div class="img_in" v-for="img in imgs" v-if="img.show" v-bind:key="img.id">
+                    <img v-bind:src="img.src">
+                </div>
+            </transition>
+            <div class="nav_in">
+                <div v-for="num in imgs.length" v-on:click="change(num-1)" v-bind:class="{selected:imgs[num-1].show}"></div>
+            </div>
+        </div>
+        <div id="info">
+            <div class="info_in">
+                <h4>XXXX</h4>
+                <span></span>
+                <p>xxxxxxxxxxx</p>
+                <p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+                <p>xxxxxxxxxxx</p>
+                <p>xxxxxxxxxxx</p>
+                <p>xxxxxxxxxxx</p>
+                <p>xxxxxxxxxxx</p>
+            </div>
+            <div class="info_in">
+                <h4>XXXX</h4>
+                <span></span>
+                <p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+            </div>
+            <div class="info_in">
+                <h4>XXXX</h4>
+                <span></span>
+                <p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+
+    <script src="../public/js/vue.js"></script>
+    <script>
+        var interval = null;
+        $(function() {
+            $("header").load("../html/header.html", function(res, status) {
+                $("ul.first li.one:nth-child(1)").addClass("selected");
+                $("footer").load("../html/footer.html", function() {
+                    handle_footer();
+                });
+            });
+            get_pics();
+        });
+
+        function get_pics() {
+            $.get('/dhzs/pics', function(res, status, xhr) {
+                for (var num = 0; num < res.files.length; num++) {
+                    var item = {
+                        id: num,
+                        src: res.src + res.files[num],
+                        show: false
+                    };
+                    rotation_chart_info.imgs.push(item);
+                    rotation_chart_info.imgs[0].show = true;
+                }
+                interval = setInterval("rotation_chart_info.next()", 5000);
+            });
+        }
+
+
+        $(window).resize(handle_footer);
+
+        function handle_footer() {
+            var height = window.innerHeight;
+            var doc_height = $('body').innerHeight();
+            if (doc_height < height) {
+                $('footer').addClass('fixed');
+            } else {
+                $('footer').removeClass('fixed');
+            }
+        }
+    </script>
+    <script>
+        var rotation_chart_info = new Vue({
+            el: '#rotation_chart',
+            data: {
+                imgs: [],
+                current_num: 0
+            },
+            methods: {
+                change: function(num) {
+                    this.imgs[this.current_num].show = false;
+                    this.imgs[num].show = true;
+                    this.current_num = num;
+                },
+                next: function() {
+                    if (this.current_num != this.imgs.length - 1) {
+                        this.change(this.current_num + 1);
+                    } else {
+                        this.change(0);
+                    }
+                },
+                mouseover: function() {
+                    window.clearInterval(interval);
+                },
+                mouseout: function() {
+                    interval = setInterval("rotation_chart_info.next()", 3000);
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

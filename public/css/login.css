@@ -1,0 +1,107 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+#container {
+    width: 20em;
+    margin: 0 auto;
+    margin-top: 15em;
+    position: relative;
+}
+
+#login,
+#register,
+#change_password {
+    width: 100%;
+    background-color: rgb(42, 42, 42);
+    color: white;
+    padding: 1em;
+    border-radius: 0.8em;
+    position: absolute;
+    transition: .8s;
+}
+
+p {
+    margin: 0;
+    display: inline-block;
+}
+
+div.logo_in {
+    width: 2em;
+    height: 2em;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+div.logo_in img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+div.head {
+    margin-bottom: 1em;
+}
+
+div.head p {
+    font-size: 2em;
+    vertical-align: bottom;
+}
+
+input {
+    width: calc(100% - 2px - 3em);
+    height: 1.5em;
+    font-size: 1.2em;
+    padding: 0;
+    border-radius: 5px;
+    border: 1px solid rgb(0, 102, 255);
+    transition: .5s;
+    margin-bottom: 1em;
+    margin-left: 1em;
+}
+
+input:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgb(0, 102, 255);
+}
+
+button {
+    margin: 0 auto;
+    font-size: 1.5em;
+    width: 4em;
+    padding: 0.1em 0 0.1em 0;
+    background-color: rgb(0, 102, 255);
+    border: 0;
+    border-radius: 10px;
+    color: white;
+    transition: .8s;
+    cursor: pointer;
+    margin-bottom: 1em;
+    outline: none;
+}
+
+button:hover {
+    background-color: rgb(0, 82, 206);
+}
+
+div.button_in {
+    text-align: center;
+}
+
+a {
+    color: rgb(0, 102, 255);
+    text-decoration: none;
+}
+
+.hidden {
+    opacity: 0;
+    z-index: -99;
+}
+
+p.info {
+    display: block;
+    font-size: x-small;
+    color: rgb(241, 59, 59);
+    text-align: center;
+}

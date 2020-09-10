@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+    <title>动作预览</title>
+    <link rel="stylesheet" type="text/css" href="../public/css/header.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/dhzs.css" />
+    <link rel="stylesheet" type="text/css" href="../public/css/footer.css" />
+    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+
+<body>
+    <header></header>
+    <main>
+        <div id="player" style="width: 100%;">
+            <div id="canvan">
+
+            </div>
+            <div id="controls">
+                <i class="fa fa-play" style="float: left;" onclick="playAnimate()"></i>
+                <i class="fa fa-pause" style="float: left;" onclick="playCtrl()"></i>
+                <i class="fa fa-backward" style="float: left;" onclick="speedChange(-0.25)"></i>
+                <i class="fa fa-forward" style="float: left;" onclick="speedChange(0.25)"></i>
+                <input type="file" id="file_in" onchange="file_load()" style="visibility: hidden; position: absolute;">
+                <i class="fa fa-upload" style="float: right;" onclick="file_in.click()"></i>
+            </div>
+        </div>
+    </main>
+    <footer></footer>
+    <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../public/js/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        $(function() {
+            $("header").load("../html/header.html", function(res, status) {
+                $("ul.first li.one:nth-child(3)").addClass("selected");
+                $("footer").load("../html/footer.html", function(res, status) {
+                    handle_footer();
+                    $("main").height(function() {
+                        return window.innerHeight - $("header").height() - $("footer").outerHeight(true) + 'px';
+                    });
+                });
+            });
+        });
+        $(window).resize(handle_footer);
+
+        function handle_footer() {
+            var height = window.innerHeight;
+            var doc_height = $('body').innerHeight();
+            if (doc_height < height) {
+                $('footer').addClass('fixed');
+            } else {
+                $('footer').removeClass('fixed');
+            }
+        }
+    </script>
+    <script>
+        function file_load() {
+            var file = document.getElementById('file_in').files[0];
+            var reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function(e) {
+                buffer = this.result;
+            }
+        }
+    </script>
+    <script src="../public/js/three.js"></script>
+    <script src="../public/js/inflate.min.js"></script>
+    <script src="../public/js/FBXLoader.js"></script>
+    <script src="../public/js/OrbitControls.js"></script>
+    <script>
+        var container, controls;
+        var camera, scene, renderer, light;
+        var clock = new THREE.Clock()
+        var mixer, action;
+        var speed = 1;
+        var ml = document.getElementById('canvan');
+
+        var buffer = null;
+
+        function init() {
+            var mapwidth = document.getElementById('canvan').offsetWidth;
+            var mapheight = document.getElementById('canvan').offsetHeight;
+            camera = new THREE.PerspectiveCamera(60, mapwidth / mapheight, 1, 2000);
+            camera.position.set(0, 200, 400);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xe7e7e7);
+
+            light = new THREE.HemisphereLight(0xdcdcdc, 0x444444);
+            light.position.set(-50, 100, 100);
+            scene.add(light);
+
+            light = new THREE.DirectionalLight(0xdcdcdc);
+            light.position.set(-50, 100, 100);
+            light.castShadow = true;
+            light.shadow.camera.top = 300;
+            light.shadow.camera.bottom = -100;
+            light.shadow.camera.left = -120;
+            light.shadow.camera.right = 420;
+            light.shadow.camera.near = 10;
+            light.shadow.camera.far = 1000;
+            scene.add(light);
+            // ground
+            var mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2000, 2000), new THREE.MeshPhongMaterial({
+                color: 0x999999,
+                depthWrite: false
+            }));
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            var grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+            grid.material.opacity = 0.2;
+            grid.material.transparent = true;
+            scene.add(grid);
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(ml.offsetWidth, ml.offsetHeight); //设置自动生成的画布大小
+            renderer.shadowMap.enabled = true;
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            ml.innerHTML = '';
+            ml.appendChild(renderer.domElement);
+            getModels();
+        }
+
+        function playAnimate() {
+            init();
+            animate();
+        }
+
+        function playCtrl() {
+            action.paused = !action.paused;
+        }
+
+        function speedChange(num) {
+            if (speed == 0.5 && num < 0) {
+                return;
+            }
+            if (speed == 1.5 && num > 0) {
+                return;
+            }
+            speed += num;
+            action.timeScale = speed;
+        }
+
+        function getModels() {
+            var object = new THREE.FBXLoader().parse(buffer, "");
+            mixer = new THREE.AnimationMixer(object); //动画播放器处理模型动画		
+            action = mixer.clipAction(object.animations[0]); //关键帧轨迹
+            action.timeScale = speed;
+            action.setLoop(THREE.loop).play(); //设置循环次数
+            object.traverse(function(child) {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            scene.add(object);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            var delta = clock.getDelta();
+            if (mixer) {
+                controls.update();
+                mixer.update(delta);
+            }
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+
+</html>
