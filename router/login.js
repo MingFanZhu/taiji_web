@@ -1,40 +1,15 @@
 const express = require('express');
 const login = express.Router();
 var bodyParser = require("body-parser");
-var mysql = require('mysql');
-var connection = null;
+var connection = require('./mysql');
 var mail = require('nodemailer');
-
-//连接以及重连
-function handleError(err) {
-    if (err) {
-        // 如果是连接断开，自动重新连接
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            connect();
-        } else {
-            console.error(err.stack || err);
-        }
-    }
-}
-
-function connect() {
-    connection = mysql.createConnection({
-        host: "47.101.146.224",
-        user: 'taiji',
-        password: '',
-        database: 'taiji_web'
-    });
-    connection.connect(handleError);
-    connection.on('error', handleError);
-}
-connect();
 
 login.use(bodyParser.urlencoded({ extended: false }));
 
-login.post('/login', function(req, res) {
+login.post('/login', function (req, res) {
     var sql = 'select email,username,convert(aes_decrypt(password,email) using utf8) as password from user where email=?';
     var sql_params = [req.body.email];
-    connection.query(sql, sql_params, function(err, result) {
+    connection.query(sql, sql_params, function (err, result) {
         if (err) {
             res.end('-1')
         } else {
@@ -55,15 +30,15 @@ login.post('/login', function(req, res) {
     })
 });
 
-login.get('/logout', function(req, res) {
+login.get('/logout', function (req, res) {
     res.cookie('login', 'false');
     res.send('change cookie');
 });
 
-login.post('/register', function(req, res) {
+login.post('/register', function (req, res) {
     var sql = 'insert into user (email,password,username) values (?,aes_encrypt(?,?),?)';
     var sql_params = [req.body.email, req.body.password, req.body.email, req.body.username];
-    connection.query(sql, sql_params, function(err, result) {
+    connection.query(sql, sql_params, function (err, result) {
         if (err) {
             res.end('-1');
         } else {
@@ -87,10 +62,10 @@ function get_code() {
     return code;
 }
 
-login.post('/sendcode', function(req, res) {
+login.post('/sendcode', function (req, res) {
     var sql = 'select email from user where email=?';
     var sql_params = [req.body.email];
-    connection.query(sql, sql_params, function(err, result) {
+    connection.query(sql, sql_params, function (err, result) {
         if (err) {
             res.end('数据库出错');
             return;
@@ -111,7 +86,7 @@ login.post('/sendcode', function(req, res) {
             subject: "太极验证码",
             html: '<h4>您的验证码是：<b>' + code + '</b></h4>'
         };
-        transport.sendMail(mailOptions, function(err, info) {
+        transport.sendMail(mailOptions, function (err, info) {
             if (err) {
                 console.log(err);
             } else {
@@ -121,10 +96,10 @@ login.post('/sendcode', function(req, res) {
     });
 });
 
-login.post('/changepassword', function(req, res) {
+login.post('/changepassword', function (req, res) {
     var sql = 'select code from user where email=?';
     sql_params = [req.body.email];
-    connection.query(sql, sql_params, function(err, result) {
+    connection.query(sql, sql_params, function (err, result) {
         if (err) {
             res.end('数据库出错');
             return;
@@ -136,7 +111,7 @@ login.post('/changepassword', function(req, res) {
                 if (result[0].code == req.body.code) {
                     sql = 'update user set password=aes_encrypt(?,?),code="" where email=?';
                     sql_params = [req.body.password, req.body.email, req.body.email];
-                    connection.query(sql, sql_params, function(err) {
+                    connection.query(sql, sql_params, function (err) {
                         if (err) {
                             res.send('修改密码出错');
                         } else {

@@ -60,9 +60,10 @@
     </script>
     <script>
         var buffer = null;
-
+        var file_name;
         function file_load() {
             var file = document.getElementById('file_in').files[0];
+            file_name=file.name.split('.')[0];
             var reader = new FileReader();
             reader.readAsArrayBuffer(file);
             reader.onload = function(e) {
@@ -109,7 +110,7 @@
             var object = new THREE.FBXLoader().parse(buffer, "");
             exporter = new THREE.ColladaExporter();
             var result = exporter.parse(object);
-            saveString(result.data, 'test.dae');
+            saveString(result.data, file_name+'.dae');
             result.textures.forEach(tex => {
                 saveArrayBuffer(tex.data, `${tex.name}.${tex.ext}`);
             });

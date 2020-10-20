@@ -63,6 +63,9 @@
             reader.onload = function(e) {
                 buffer = this.result;
             }
+            reader.onloadend=function(){
+                alert('文件上传完毕');
+            }
         }
     </script>
     <script src="../public/js/three.js"></script>

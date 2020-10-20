@@ -14,32 +14,66 @@
 <body>
     <header></header>
     <main>
-        <div id="fbxs">
-            <div id="up" onclick="scroll_by_div(-50)">
-                <i class="fa fa-chevron-up" title="向上滚动"></i>
-            </div>
-            <div id="fbx_in">
-                <div class="fbx" v-bind:class="{selected: index==selected_id}" v-for="(fbx,index) in fbxs" v-on:click="select(index)">
-                    <img v-bind:src="fbx.img_src">
-                    <div class="info">
-                        <span>{{fbx.title}}</span>
+        <div id="main">
+            <div id="fbxs">
+                <div id="up" onclick="scroll_by_div(-50)">
+                    <i class="fa fa-chevron-up" title="向上滚动"></i>
+                </div>
+                <div id="fbx_in">
+                    <div class="fbx" v-bind:class="{selected: fbx.id==selected_id}" v-for="fbx in fbxs"
+                        v-on:click="select(fbx.id)">
+                        <img v-bind:src="fbx.img_src">
+                        <div class="info">
+                            <span>{{fbx.title}}</span>
+                        </div>
                     </div>
                 </div>
+                <div id="down" onclick="scroll_by_div(50)">
+                    <i class="fa fa-chevron-down"></i>
+                </div>
             </div>
-            <div id="down" onclick="scroll_by_div(50)">
-                <i class="fa fa-chevron-down"></i>
+            <div id="player">
+                <div id="canvan">
+
+                </div>
+                <div id="controls">
+                    <i class="fa fa-play" style="float: left;" onclick="playAnimate()"></i>
+                    <i class="fa fa-pause" style="float: left;" onclick="playCtrl()"></i>
+                    <i class="fa fa-backward" style="float: left;" onclick="speedChange(-0.25)"></i>
+                    <i class="fa fa-forward" style="float: left;" onclick="speedChange(0.25)"></i>
+                    <i class="fa fa-download" style="float: right;" onclick="download()"></i>
+                </div>
             </div>
         </div>
-        <div id="player">
-            <div id="canvan">
-
+        <div id="comment">
+            <h2>评论</h2>
+            <div class="up_comment">
+                <textarea cols="30" rows="10" maxlength="140" v-model="comment"></textarea>
+                <button v-on:click="up_comment(-1,comment,null)">发表</button>
             </div>
-            <div id="controls">
-                <i class="fa fa-play" style="float: left;" onclick="playAnimate()"></i>
-                <i class="fa fa-pause" style="float: left;" onclick="playCtrl()"></i>
-                <i class="fa fa-backward" style="float: left;" onclick="speedChange(-0.25)"></i>
-                <i class="fa fa-forward" style="float: left;" onclick="speedChange(0.25)"></i>
-                <i class="fa fa-download" style="float: right;" onclick="download()"></i>
+            <hr>
+            <div id="other_comments">
+                <div class="other_comment" v-for="(item,index) in comments" v-bind:key="index">
+                    <p class="user_name">{{item.user_name}}</p>
+                    <p class="text">{{item.text}}</p>
+                    <div class="info">
+                        <span class="time">{{item.time=='刚刚'? '刚刚':new Date(item.time).toLocaleString()}}</span>
+                        <span class="reply" v-on:click="change_rep(item)">回复</span>
+                    </div>
+                    <div class="up_comment" v-if="item.rep">
+                        <textarea cols="30" rows="10" maxlength="140" v-model="item.relpy_comment"></textarea>
+                        <button v-on:click="up_comment(item.idcomments,item.relpy_comment,item)">发表</button>
+                    </div>
+                    <div class="comment_reply">
+                        <div class="reply_content" v-for="it in item.reply">
+                            <p class="user_name">{{it.user_name}}</p>
+                            <p class="text">{{it.text}}</p>
+                            <div class="info">
+                                <span class="time">{{it.time=='刚刚'? '刚刚':new Date(it.time).toLocaleString()}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -47,39 +81,37 @@
     <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
     <script src="../public/js/vue.js" type="text/javascript" charset="utf-8"></script>
     <script>
-        $(function() {
-            $("header").load("../html/header.html", function(res, status) {
+        $(function () {
+            $("header").load("../html/header.html", function (res, status) {
                 $("ul.first li.one:nth-child(2)").addClass("selected");
-                $("footer").load("../html/footer.html", function(res, status) {
-                    handle_footer();
-                    $("main").height(function() {
+                $("footer").load("../html/footer.html", function (res, status) {
+                    $("#main").height(function () {
                         return window.innerHeight - $("header").height() - $("footer").outerHeight(true) + 'px';
                     });
+                    handle_footer();
                 });
             });
             //加载动作文件数据
             var url = window.location.href;
             url = '/dhzs/' + url.split('?')[1];
-            $.get(url, function(res) {
+            $.get(url, function (res) {
                 if (res == 'error') {
                     return;
                 }
                 var fbx = [];
                 for (var file of res.files) {
-                    var file_name = file.split('.')[0];
-                    var file_extension = file.split('.')[1];
-                    if (file_extension == 'fbx' || file_extension == 'FBX') {
-                        var file_obj = {};
-                        file_obj.title = file_name;
-                        file_obj.src = res.src + file;
-                        file_obj.img_src = res.src + file_name + '.png';
-                        fbx.push(file_obj);
-                    }
+                    var file_name = file.file_name.split('.')[0];
+                    var file_obj = {};
+                    file_obj.title = file_name;
+                    file_obj.src = res.src + file.file_name;
+                    file_obj.img_src = res.src + file.img_src
+                    file_obj.id = file.idfbxs
+                    fbx.push(file_obj);
                 }
                 fbxs.fbxs = fbx;
-                fbxs.selected_id = 0;
-            })
+            });
         });
+
         $(window).resize(handle_footer);
 
         function handle_footer() {
@@ -100,11 +132,65 @@
                 selected_id: -1
             },
             methods: {
-                select: function(index) {
+                select: function (index) {
                     this.selected_id = index;
+                    $.get('/dhzs/comment?' + fbxs.selected_id, function (res) {
+                        for (var item of res.comments) {
+                            item.rep = undefined;
+                            item.reply_comment = '';
+                        }
+                        comment.comments = res.comments;
+                    });
                 }
-            },
+            }
         });
+
+        var comment = new Vue({
+            el: "#comment",
+            data: {
+                comments: [],
+                comment: ''
+            },
+            methods: {
+                up_comment: function (commentid, text, par) {
+                    cookie = get_cookie();
+                    if (cookie.login == undefined || cookie.login == 'false') {
+                        window.location.href = '../html/login.html';
+                        return;
+                    }
+                    if (text == '' || fbxs.selected_id == -1) {
+                        return;
+                    }
+                    var data = {
+                        'fbxid': fbxs.selected_id,
+                        'commentid': commentid,
+                        'user': cookie.user,
+                        'user_name': cookie.username,
+                        'text': text
+                    };
+                    (function(par) {
+                        $.post('/dhzs/up_comment', data, function (res) {
+                            if (res == 'error') {
+                                alert('error');
+                            } else {
+                                if (par == null) {
+                                    comment.comments.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                } else {
+                                    par.reply.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                }
+                            }
+                        });
+                    })(par);
+                },
+                change_rep: function (item) {
+                    if (item.rep == undefined) {
+                        item.rep = true;
+                    } else {
+                        item.rep = !item.rep;
+                    }
+                }
+            }
+        })
     </script>
     <script>
         function scroll_by_div(num) {
@@ -205,12 +291,12 @@
         function getModels() {
             var modelsurl = fbxs.fbxs[fbxs.selected_id].src;
             var loader = new THREE.FBXLoader();
-            loader.load(modelsurl, function(object) {
+            loader.load(modelsurl, function (object) {
                 mixer = new THREE.AnimationMixer(object); //动画播放器处理模型动画		
                 action = mixer.clipAction(object.animations[0]); //关键帧轨迹
                 action.timeScale = speed; // 播放速度，默认速度为1
                 action.setLoop(THREE.loop).play(); //设置循环次数
-                object.traverse(function(child) {
+                object.traverse(function (child) {
                     if (child.isMesh) {
                         child.castShadow = true;
                         child.receiveShadow = true;
