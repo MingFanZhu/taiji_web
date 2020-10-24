@@ -133,8 +133,8 @@
             },
             methods: {
                 select: function (index) {
-                    this.selected_id = index;
-                    $.get('/dhzs/comment?' + fbxs.selected_id, function (res) {
+                    this.selected_id = index-1;
+                    $.get('/dhzs/comment?' + index, function (res) {
                         for (var item of res.comments) {
                             item.rep = undefined;
                             item.reply_comment = '';
