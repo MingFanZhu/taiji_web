@@ -54,8 +54,8 @@
             <hr>
             <div id="other_comments">
                 <div class="other_comment" v-for="(item,index) in comments" v-bind:key="index">
-                    <p class="user_name">{{item.user_name}}</p>
-                    <p class="text">{{item.text}}</p>
+                    <p class="user_name"><b>{{item.user_name}}</b></p>
+                    <p class="text" v-html="html_replay(item.text)"></p>
                     <div class="info">
                         <span class="time">{{item.time=='刚刚'? '刚刚':new Date(item.time).toLocaleString()}}</span>
                         <span class="reply" v-on:click="change_rep(item)">回复</span>
@@ -66,8 +66,8 @@
                     </div>
                     <div class="comment_reply">
                         <div class="reply_content" v-for="it in item.reply">
-                            <p class="user_name">{{it.user_name}}</p>
-                            <p class="text">{{it.text}}</p>
+                            <p class="user_name"><b>{{it.user_name}}</b></p>
+                            <p class="text" v-html="html_replay(it.text)"></p>
                             <div class="info">
                                 <span class="time">{{it.time=='刚刚'? '刚刚':new Date(it.time).toLocaleString()}}</span>
                             </div>
@@ -140,6 +140,9 @@
                             item.reply_comment = '';
                         }
                         comment.comments = res.comments;
+                        if (res.reply == []) {
+                            comment.comments.reply = [];
+                        }
                     });
                 }
             }
@@ -150,6 +153,13 @@
             data: {
                 comments: [],
                 comment: ''
+            },
+            computed: {
+                html_replay() {
+                    return function(text){
+                        return text.replace(/\n/g,'<br>');
+                    }
+                }
             },
             methods: {
                 up_comment: function (commentid, text, par) {
@@ -168,15 +178,17 @@
                         'user_name': cookie.username,
                         'text': text
                     };
-                    (function(par) {
+                    (function (par) {
                         $.post('/dhzs/up_comment', data, function (res) {
                             if (res == 'error') {
                                 alert('error');
                             } else {
                                 if (par == null) {
                                     comment.comments.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                    comment.comment = '';
                                 } else {
                                     par.reply.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                    par.relpy_comment = '';
                                 }
                             }
                         });
@@ -190,7 +202,7 @@
                     }
                 }
             }
-        })
+        });
     </script>
     <script>
         function scroll_by_div(num) {
