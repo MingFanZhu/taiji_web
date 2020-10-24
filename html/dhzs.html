@@ -20,7 +20,7 @@
                     <i class="fa fa-chevron-up" title="向上滚动"></i>
                 </div>
                 <div id="fbx_in">
-                    <div class="fbx" v-bind:class="{selected: fbx.id==selected_id}" v-for="fbx in fbxs"
+                    <div class="fbx" v-bind:class="{selected: fbx.id-1==selected_id}" v-for="fbx in fbxs"
                         v-on:click="select(fbx.id)">
                         <img v-bind:src="fbx.img_src">
                         <div class="info">
