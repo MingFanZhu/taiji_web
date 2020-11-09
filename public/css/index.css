@@ -101,6 +101,6 @@ main {
 #info div.info_in p {
     width: 15em;
     word-wrap: break-word;
-    text-indent: 1em;
     margin: 0px;
+    text-align: center;
 }
