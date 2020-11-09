@@ -53,6 +53,7 @@
             </div>
             <hr>
             <div id="other_comments">
+                <p v-if="comments.length==0">暂无评论</p>
                 <div class="other_comment" v-for="(item,index) in comments" v-bind:key="index">
                     <p class="user_name"><b>{{item.user_name}}</b></p>
                     <p class="text" v-html="html_replay(item.text)"></p>
