@@ -91,13 +91,13 @@ dhzs.get('/comment',function(req,res){
 });
 
 dhzs.post('/up_comment',function(req,res){
-    var sql = 'insert into comments (fbxid,commentid,user,user_name,time,text) values (?,?,?,?,?,?)';
-    var sql_params = [req.body.fbxid,req.body.commentid,req.body.user,req.body.user_name,new Date(),req.body.text];
-    connection.query(sql,sql_params,function(err){
+    var sql = "INSERT INTO `taiji_web`.`comments` (`fbxid`, `commentid`, `user`, `user_name`, `text`, `time`) VALUES (?, ?, ?, ?, ?, ?);";
+    var sql_params = [req.body.fbxid,req.body.commentid,req.body.user,req.body.user_name,req.body.text,new Date()];
+    connection.query(sql,sql_params,function(err,data){
         if(err){
             res.send('error');
         }else{
-            res.send('ok');
+            res.send(''+data.insertId);
         }
     });
 })

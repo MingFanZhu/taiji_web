@@ -134,16 +134,13 @@
             },
             methods: {
                 select: function (index) {
-                    this.selected_id = index-1;
+                    this.selected_id = index - 1;
                     $.get('/dhzs/comment?' + index, function (res) {
                         for (var item of res.comments) {
                             item.rep = undefined;
                             item.reply_comment = '';
                         }
                         comment.comments = res.comments;
-                        if (res.reply == []) {
-                            comment.comments.reply = [];
-                        }
                     });
                 }
             }
@@ -157,8 +154,8 @@
             },
             computed: {
                 html_replay() {
-                    return function(text){
-                        return text.replace(/\n/g,'<br>');
+                    return function (text) {
+                        return text.replace(/\n/g, '<br>');
                     }
                 }
             },
@@ -173,7 +170,7 @@
                         return;
                     }
                     var data = {
-                        'fbxid': fbxs.selected_id,
+                        'fbxid': fbxs.selected_id + 1,
                         'commentid': commentid,
                         'user': cookie.user,
                         'user_name': cookie.username,
@@ -185,10 +182,10 @@
                                 alert('error');
                             } else {
                                 if (par == null) {
-                                    comment.comments.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                    comment.comments.push({ idcomments: res, fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false,reply:[] });
                                     comment.comment = '';
                                 } else {
-                                    par.reply.push({ fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
+                                    par.reply.push({ idcomments: res, fbxid: fbxs.selected_id, commentid: commentid, user: cookie.user, user_name: cookie.username, text: text, time: '刚刚', rep: false });
                                     par.relpy_comment = '';
                                 }
                             }
