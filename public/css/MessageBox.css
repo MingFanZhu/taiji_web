@@ -1,0 +1,44 @@
+#MessageBox{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+#MessageBox .MBcontainer{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    background-image: linear-gradient(rgb(109, 198, 240),rgb(164, 185, 206));
+    padding: 1em;
+    padding-bottom: 0.5em;
+    font-size: 2em;
+}
+
+#MessageBox button{
+    margin: 0;
+    padding: 0;
+    outline: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    font-size: 0.5em;
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+    transition: color .8s;
+}
+
+#MessageBox button:hover{
+    color: rgb(255, 255, 255);
+}
+
+#MessageBox p{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font: '微软雅黑';
+}
