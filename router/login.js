@@ -36,7 +36,7 @@ login.get('/logout', function (req, res) {
 });
 
 login.post('/register', function (req, res) {
-    var sql = 'insert into user (email,password,username) values (?,aes_encrypt(?,?),?)';
+    var sql = "insert into user (email,password,username) values (?,aes_encrypt(?,?),?)";
     var sql_params = [req.body.email, req.body.password, req.body.email, req.body.username];
     connection.query(sql, sql_params, function (err, result) {
         if (err) {
