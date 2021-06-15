@@ -3,6 +3,7 @@ const app = express();
 const html = require('./router/html');
 const dhzs = require('./router/dhzs');
 const login = require("./router/login");
+const upload=require('./router/upload')
 
 app.use('/public', express.static('public'));
 
@@ -13,6 +14,7 @@ app.get('/', function(req, res) {
 app.use('/html', html);
 app.use('/dhzs', dhzs);
 app.use('/login', login);
+app.use('/upload',upload);
 
 var server = app.listen(8086, 'localhost', function() {
     var host = server.address().address;
