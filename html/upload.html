@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>上传FBX文件</title>
+    <link rel="stylesheet" href="../public/css/footer.css">
+    <link rel="stylesheet" href="../public/css/upload.css">
+</head>
+
+<body>
+    <main>
+        <div id="info">
+            <h2>上传FBX文件</h2>
+        </div>
+        <div id="upload">
+            <span>分区: <select id="path" v-model="path">
+                    <option value="taiji">太极</option>
+                    <option value="wudao">舞蹈</option>
+                    <option value="qita">其他</option>
+                </select></span>
+            <div class="file_upload">
+                <div class="loading_container">
+                    <div class="loading_bar" v-bind:style="{width: width}"></div>
+                    <p>{{width}}</p>
+                </div>
+                <input type="file" accept=".fbx" id="file_in" onchange="file_upload()"
+                    style="visibility: hidden; position: absolute;">
+                <button class="btns" v-bind:class="{loaded:file_loaded}" onclick="file_in.click()">上传FBX文件</button>
+            </div>
+            <div class="image_upload">
+                <input type="file" accept=".png" id="image_in" onchange="img_upload()"
+                    style="visibility: hidden; position: absolute;">
+                <button class="btns" v-bind:class="{loaded:img_loaded}" onclick="image_in.click()">上传封面</button>
+                <img id="preview" src="" v-bind:style="hidden">
+            </div>
+            <button class="btns" v-on:click="upload">上传</button>
+        </div>
+    </main>
+    <footer></footer>
+</body>
+<script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="../public/js/vue.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    $(function () {
+        $("footer").load("../html/footer.html", function (res, status) {
+            handle_footer();
+            $("main").height(function () {
+                return window.innerHeight - $("header").height() - $("footer").outerHeight(true) + 'px';
+            });
+        });
+    });
+    $(window).resize(handle_footer);
+
+    function handle_footer() {
+        var height = window.innerHeight;
+        var doc_height = $('body').innerHeight();
+        if (doc_height < height) {
+            $('footer').addClass('fixed');
+        } else {
+            $('footer').removeClass('fixed');
+        }
+    }
+</script>
+<script>
+    var upload = new Vue({
+        el: '#upload',
+        data: {
+            path: '',
+            width: '0%',
+            file: null,
+            img: null,
+            file_loaded: false,
+            file_name: '',
+            img_loaded: false,
+            img_name: '',
+            hidden: {
+                visibility: 'hidden',
+                width: 0,
+                height: 0,
+            }
+        },
+        methods: {
+            upload: function () {
+                if (this.file_loaded && this.img_loaded) {
+                    var file_form = new FormData();
+                    file_form.append('file', this.file);
+                    file_form.append('path', this.path);
+                    file_form.append('img', this.img);
+                    $.ajax({
+                        type: "post",
+                        url: "../upload/file",
+                        data: file_form,
+                        contentType:false,
+                        processData: false,
+                        xhr: function () {
+                            //获取xmlhttprequest对象或者ActiveXObject 对象，jquery中封装好的。
+                            var xhr = $.ajaxSettings.xhr();
+                            if (xhr.upload) {
+                                xhr.upload.addEventListener("progress", function (evt) {
+                                    var loaded = evt.loaded; //已经上传大小情况
+                                    var tot = evt.total; //附件总大小
+                                    var per = Math.floor(100 * loaded / tot); //已经上传的百分比
+                                    upload.width = per + '%';
+                                }, false);
+                            }
+                            return xhr;
+                        },
+                        success: function () { },
+                        error: function () {
+                            console.log(arguments);
+                        }
+                    });
+                } else {
+                    return;
+                }
+            }
+        }
+    })
+</script>
+<script>
+    function file_upload() {
+        var file = document.getElementById('file_in').files[0];
+        upload.file_name = file.name;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onloadend = function () {
+            upload.file = document.getElementById('file_in').files[0];
+            upload.file_loaded = true;
+        }
+    }
+
+    function img_upload() {
+        var file = document.getElementById('image_in').files[0];
+        upload.img_name = file.name;
+        var reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onloadend = function () {
+            var file = document.getElementById('image_in').files[0];
+            var url = window.URL.createObjectURL(file);
+            $('#preview')[0].src = url;
+            upload.img = file;
+            upload.img_loaded = true;
+            upload.hidden = {
+                visibility: '',
+                width: '150px',
+                height: '120px'
+            };
+        }
+    }
+</script>
+
+</html>
