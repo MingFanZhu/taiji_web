@@ -1,3 +1,10 @@
+/*
+ * @Author: zmf
+ * @Date: 2020-10-19 14:01:51
+ * @LastEditors: zmf
+ * @LastEditTime: 2021-06-11 11:13:47
+ * @Description: file content
+ */
 var mysql = require('mysql');
 var pool = null;
 
@@ -27,9 +34,9 @@ var pool = null;
 
 
 pool = mysql.createPool({
-    host: "47.101.146.224",
-    user: 'taiji',
-    password: '',
-    database: 'taiji_web'
+    host: "localhost",
+    user: 'root',
+    password: '31415926',
+    database: 'test'
 });
 module.exports = pool;
