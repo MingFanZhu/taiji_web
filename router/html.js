@@ -31,4 +31,8 @@ html.get('/login.html', function(req, res) {
     res.sendFile(path + "/login.html");
 })
 
+html.get('/upload.html', function(req, res) {
+    res.sendFile(path + "/upload.html");
+})
+
 module.exports = html;
