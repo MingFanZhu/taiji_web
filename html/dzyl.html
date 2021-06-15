@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="../public/css/dhzs.css" />
     <link rel="stylesheet" type="text/css" href="../public/css/footer.css" />
     <link rel="stylesheet" href="../public/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../public/css/MessageBox.css">
 </head>
 
 <body>
@@ -24,13 +25,15 @@
                 <i class="fa fa-backward" style="float: left;" onclick="speedChange(-0.25)"></i>
                 <i class="fa fa-forward" style="float: left;" onclick="speedChange(0.25)"></i>
                 <input type="file" id="file_in" onchange="file_load()" style="visibility: hidden; position: absolute;">
-                <i class="fa fa-upload" style="float: right;" onclick="file_in.click()"></i>
+                <i class="fa fa-upload" style="float: right;" onclick="upload()"></i>
+                <i class="fa fa-file" style="float: right;" onclick="file_in.click()"></i>
             </div>
         </div>
     </main>
     <footer></footer>
     <script src="../public/js/jquery-3.5.1.js" type="text/javascript" charset="utf-8"></script>
     <script src="../public/js/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../public/js/MessageBox.js"></script>
     <script>
         $(function() {
             $("header").load("../html/header.html", function(res, status) {
@@ -64,7 +67,16 @@
                 buffer = this.result;
             }
             reader.onloadend=function(){
-                alert('文件上传完毕');
+                document.querySelector('body').appendChild(new MessageBox('文件读取完毕').element());
+            }
+        }
+
+        function upload(){
+            var cookie=document.cookie;
+            if(/login=true/.exec(cookie)){
+                window.location.href='/html/upload.html';
+            }else{
+                document.querySelector('body').appendChild(new MessageBox('请先登录').element());
             }
         }
     </script>
@@ -80,7 +92,7 @@
         var speed = 1;
         var ml = document.getElementById('canvan');
 
-        var buffer = null;
+        var buffer = null;//用户上传的文件
 
         function init() {
             var mapwidth = document.getElementById('canvan').offsetWidth;
