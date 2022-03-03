@@ -16,12 +16,6 @@ debug：在vscode中选择nodejs调试
 web三维动画
 模型格式转换
 
-技术栈：
-nodejs（express、mysql、nodemailer、body-parser）
-webgl（three.js）
-vue
-mysql
-
 进度：
 20.8.19：
 完成了主要的代码工作，还有网页内容填充的工作需要继续
